@@ -3,8 +3,12 @@ Client untuk mengambil data order dari Shopify Admin API.
 """
 
 import os
+import sys
 import requests
 from dotenv import load_dotenv
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+from src.sync.retry import retry_with_backoff
 
 load_dotenv()
 
@@ -13,6 +17,7 @@ ACCESS_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN")
 API_VERSION = "2026-07"  # samakan dengan versi yang dipilih waktu bikin app
 
 
+@retry_with_backoff(max_attempts=4, base_delay=1.0)
 def fetch_orders(limit: int = 50) -> list[dict]:
     """
     Ambil daftar order terbaru dari toko Shopify.
