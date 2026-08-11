@@ -1,0 +1,21 @@
+# Database
+sqlalchemy==2.0.35
+alembic==1.13.3
+psycopg[binary]==3.2.10
+
+# HTTP client (buat panggil Shopify API)
+requests==2.32.3
+
+# Scheduler
+apscheduler==3.10.4
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Google Sheets (dipakai belakangan)
+gspread==6.1.4
+google-auth==2.35.0
+
+# Testing
+pytest==8.3.3
+pytest-mock==3.14.0

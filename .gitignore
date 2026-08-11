@@ -1,0 +1,36 @@
+# Environment & secrets
+.env
+credentials.json
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+venv/
+env/
+.venv/
+
+# Virtual environment (kalau kamu bikin di dalam folder proyek)
+.venv/
+
+# Database
+*.db
+*.sqlite3
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+docker-compose.override.yml
