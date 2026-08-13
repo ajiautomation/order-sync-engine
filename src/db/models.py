@@ -1,6 +1,6 @@
 """
-SQLAlchemy models — definisi struktur tabel database.
-Alembic membaca file ini untuk tahu struktur tabel apa yang seharusnya ada.
+SQLAlchemy models — defines the database table structure.
+Alembic reads this file to know what table structure should exist.
 """
 
 from datetime import datetime, timezone
@@ -20,7 +20,7 @@ Base = declarative_base()
 
 
 class Order(Base):
-    """Order yang lolos validasi — data bersih siap dipakai."""
+    """Orders that passed validation — clean data ready to use."""
 
     __tablename__ = "orders"
 
@@ -41,7 +41,7 @@ class Order(Base):
 
 
 class Quarantine(Base):
-    """Order yang gagal validasi — disimpan untuk direview manual, bukan dibuang."""
+    """Orders that failed validation — kept for manual review instead of being discarded."""
 
     __tablename__ = "quarantine"
 
@@ -54,7 +54,7 @@ class Quarantine(Base):
 
 
 class SyncLog(Base):
-    """Audit trail — catatan setiap kali proses sync dijalankan."""
+    """Audit trail — a record of every time the sync process runs."""
 
     __tablename__ = "sync_log"
 

@@ -9,11 +9,11 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from src.sync.retry import retry_with_backoff
+from src.integrations.token_manager import get_valid_token
 
 load_dotenv()
 
 SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN")
-ACCESS_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN")
 API_VERSION = "2026-07"  # keep in sync with the version chosen when the app was created
 
 
@@ -22,21 +22,35 @@ def fetch_orders(limit: int = 50) -> list[dict]:
     """
     Fetch the most recent orders from the Shopify store.
 
+    The access token is obtained automatically (and refreshed automatically
+    when close to expiry, or immediately if Shopify returns 401) — no
+    manual token handling required.
+
     Returns: a list of dicts, one per order (already flattened to the
     simplified format expected by the validator).
     """
-    if not SHOP_DOMAIN or not ACCESS_TOKEN:
-        raise ValueError(
-            "SHOPIFY_SHOP_DOMAIN and SHOPIFY_ACCESS_TOKEN must be set in .env"
-        )
+    if not SHOP_DOMAIN:
+        raise ValueError("SHOPIFY_SHOP_DOMAIN must be set in .env")
 
     url = f"https://{SHOP_DOMAIN}/admin/api/{API_VERSION}/orders.json"
 
+    token = get_valid_token()
     response = requests.get(
         url,
-        headers={"X-Shopify-Access-Token": ACCESS_TOKEN},
+        headers={"X-Shopify-Access-Token": token},
         params={"limit": limit, "status": "any"},
     )
+
+    if response.status_code == 401:
+        # Token was rejected earlier than expected (revoked, clock drift,
+        # etc.) — force a fresh one and retry once before giving up.
+        token = get_valid_token(force_refresh=True)
+        response = requests.get(
+            url,
+            headers={"X-Shopify-Access-Token": token},
+            params={"limit": limit, "status": "any"},
+        )
+
     response.raise_for_status()
 
     raw_orders = response.json().get("orders", [])

@@ -1,9 +1,12 @@
 """
-One-off script to exchange a Client ID + Secret for an Admin API access token.
+OPTIONAL diagnostic script — exchanges Client ID + Secret for an Admin API
+access token and prints it.
 
-As of early 2026, Shopify no longer displays the access token directly in
-the admin UI — it must be requested programmatically via Client Credentials
-Grant.
+This is no longer required for normal operation: src/sync/sync_engine.py
+fetches and refreshes the access token automatically via
+src/integrations/token_manager.py. Use this script only to manually verify
+that SHOPIFY_CLIENT_ID / SHOPIFY_CLIENT_SECRET / SHOPIFY_SHOP_DOMAIN are
+correct, or to inspect a token outside of the running app.
 
 Run: python -m src.integrations.get_shopify_token
 """

@@ -77,7 +77,8 @@ pip install -r requirements.txt
 
 # Configure environment variables
 cp .env.example .env
-# Fill in SHOPIFY_SHOP_DOMAIN and SHOPIFY_ACCESS_TOKEN in .env
+# Fill in SHOPIFY_SHOP_DOMAIN, SHOPIFY_CLIENT_ID, and SHOPIFY_CLIENT_SECRET in .env
+# (the access token is fetched and refreshed automatically — no manual step needed)
 
 # Run database migrations
 alembic upgrade head
