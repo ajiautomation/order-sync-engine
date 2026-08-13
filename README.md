@@ -42,6 +42,12 @@ Triggered by: scheduler.py (APScheduler, runs every SYNC_INTERVAL_MINUTES)
 - **Full audit trail** — every run (success, partial, or failed) is recorded in `sync_log` with record counts and error messages
 - **Tested** — validation logic covered by pytest unit tests, isolated from the database and API
 
+## Preview
+
+![Order sync engine dashboard](docs/porto_1.jpg)
+
+*Visual summary of a sync run (illustrative — built to showcase the pipeline's output at a glance).*
+
 ## Tech Stack
 
 | Layer | Technology |
