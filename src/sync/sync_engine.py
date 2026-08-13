@@ -1,14 +1,14 @@
 """
-Sync Engine — inti dari proyek ini.
+Sync Engine — the core of this project.
 
-Alur:
-1. Ambil order dari Shopify
-2. Validasi tiap order
-3. Valid -> simpan ke tabel `orders` (skip kalau sudah ada, biar idempotent)
-4. Invalid -> simpan ke tabel `quarantine` beserta alasannya
-5. Catat ringkasan proses ke tabel `sync_log`
+Flow:
+1. Fetch orders from Shopify
+2. Validate each order
+3. Valid   -> upsert into the `orders` table (idempotent, no duplicates on re-run)
+4. Invalid -> save to the `quarantine` table with the failure reason
+5. Record a summary of the run in the `sync_log` table
 
-Jalankan: python src/sync/sync_engine.py
+Run: python -m src.sync.sync_engine
 """
 
 import sys
@@ -77,8 +77,9 @@ def run_sync():
 
 def _save_valid_order(session, order_data: dict):
     """
-    Simpan order valid ke tabel `orders`.
-    Idempotent: kalau shopify_order_id sudah ada, update saja, jangan bikin baris baru.
+    Save a valid order to the `orders` table.
+    Idempotent: if shopify_order_id already exists, update it instead of
+    inserting a new row.
     """
     existing = (
         session.query(Order)
@@ -107,7 +108,7 @@ def _save_valid_order(session, order_data: dict):
 
 
 def _save_quarantined_order(session, order_data: dict, reason: str):
-    """Simpan order yang gagal validasi ke tabel `quarantine`."""
+    """Save an order that failed validation to the `quarantine` table."""
     quarantine_entry = Quarantine(
         shopify_order_id=order_data.get("shopify_order_id", "unknown"),
         raw_payload=order_data.get("raw_payload"),
@@ -118,10 +119,10 @@ def _save_quarantined_order(session, order_data: dict, reason: str):
 
 if __name__ == "__main__":
     result = run_sync()
-    print("\nSync selesai!\n")
+    print("\nSync complete!\n")
     print(f"Status              : {result['status']}")
-    print(f"Order diambil       : {result['orders_fetched']}")
-    print(f"Order berhasil sync : {result['orders_synced']}")
-    print(f"Order di-quarantine : {result['orders_quarantined']}")
+    print(f"Orders fetched      : {result['orders_fetched']}")
+    print(f"Orders synced       : {result['orders_synced']}")
+    print(f"Orders quarantined  : {result['orders_quarantined']}")
     if result["error_message"]:
         print(f"Error               : {result['error_message']}")

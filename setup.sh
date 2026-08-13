@@ -1,10 +1,10 @@
 #!/bin/bash
-# setup.sh — bikin struktur folder + file awal untuk order-sync-engine
-# Jalankan ini dari dalam folder order-sync-engine (setelah git init)
+# setup.sh — scaffold the initial folder structure and config files for order-sync-engine
+# Run this from inside the order-sync-engine folder (after git init)
 
-set -e  # stop kalau ada error
+set -e  # stop on error
 
-echo "Membuat struktur folder..."
+echo "Creating folder structure..."
 mkdir -p src/db/migrations
 mkdir -p src/integrations
 mkdir -p src/validation
@@ -12,7 +12,7 @@ mkdir -p src/sync
 mkdir -p tests
 mkdir -p docs
 
-echo "Membuat file __init__.py (biar Python kenali folder ini sebagai package)..."
+echo "Creating __init__.py files (so Python treats these as packages)..."
 touch src/__init__.py
 touch src/db/__init__.py
 touch src/integrations/__init__.py
@@ -20,28 +20,26 @@ touch src/validation/__init__.py
 touch src/sync/__init__.py
 touch tests/__init__.py
 
-echo "Membuat .env.example..."
-cat > .env.example << 'EOF'
-# Salin file ini jadi .env dan isi dengan value asli kamu
-# JANGAN commit file .env ke git
+echo "Creating .env.example..."
+cat > .env.example << 'ENVEOF'
+# Copy this file to .env and fill in your real values
+# DO NOT commit .env to git
 
 # Database
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/order_sync
 
-# Shopify (isi setelah bikin development store)
-SHOPIFY_SHOP_URL=your-store.myshopify.com
+# Shopify Admin API (Client Credentials Grant)
+SHOPIFY_SHOP_DOMAIN=your-store.myshopify.com
+SHOPIFY_CLIENT_ID=
+SHOPIFY_CLIENT_SECRET=
 SHOPIFY_ACCESS_TOKEN=
-
-# Google Sheets (isi belakangan)
-GOOGLE_SHEETS_CREDENTIALS_PATH=credentials.json
-GOOGLE_SHEET_ID=
 
 # Sync settings
 SYNC_INTERVAL_MINUTES=15
-EOF
+ENVEOF
 
-echo "Membuat .gitignore..."
-cat > .gitignore << 'EOF'
+echo "Creating .gitignore..."
+cat > .gitignore << 'GITEOF'
 # Environment & secrets
 .env
 credentials.json
@@ -55,9 +53,6 @@ __pycache__/
 .eggs/
 venv/
 env/
-.venv/
-
-# Virtual environment (kalau kamu bikin di dalam folder proyek)
 .venv/
 
 # Database
@@ -78,16 +73,16 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
-EOF
+GITEOF
 
-echo "Membuat requirements.txt..."
-cat > requirements.txt << 'EOF'
+echo "Creating requirements.txt..."
+cat > requirements.txt << 'REQEOF'
 # Database
 sqlalchemy==2.0.35
 alembic==1.13.3
 psycopg2-binary==2.9.9
 
-# HTTP client (buat panggil Shopify API)
+# HTTP client (for calling the Shopify API)
 requests==2.32.3
 
 # Scheduler
@@ -96,17 +91,13 @@ apscheduler==3.10.4
 # Environment variables
 python-dotenv==1.0.1
 
-# Google Sheets (dipakai belakangan)
-gspread==6.1.4
-google-auth==2.35.0
-
 # Testing
 pytest==8.3.3
 pytest-mock==3.14.0
-EOF
+REQEOF
 
-echo "Membuat docker-compose.yml (Postgres lokal buat development)..."
-cat > docker-compose.yml << 'EOF'
+echo "Creating docker-compose.yml (local Postgres for development)..."
+cat > docker-compose.yml << 'DCEOF'
 services:
   postgres:
     image: postgres:16
@@ -122,16 +113,16 @@ services:
 
 volumes:
   postgres_data:
-EOF
+DCEOF
 
 echo ""
-echo "Selesai! Struktur folder yang dibuat:"
+echo "Done! Files created:"
 echo ""
 find . -type f -not -path './.git/*' | sort
 
 echo ""
-echo "Langkah selanjutnya:"
-echo "1. Review isi .env.example, lalu copy jadi .env: cp .env.example .env"
-echo "2. Bikin virtual environment: python -m venv .venv"
-echo "3. Aktifkan venv: source .venv/Scripts/activate"
+echo "Next steps:"
+echo "1. Review .env.example, then copy it to .env: cp .env.example .env"
+echo "2. Create a virtual environment: python -m venv .venv"
+echo "3. Activate it: source .venv/Scripts/activate"
 echo "4. Install dependencies: pip install -r requirements.txt"

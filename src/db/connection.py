@@ -1,5 +1,5 @@
 """
-Koneksi database — dipakai oleh sync_engine untuk menyimpan data.
+Database connection — used by sync_engine to persist data.
 """
 
 import os
@@ -16,5 +16,5 @@ SessionLocal = sessionmaker(bind=engine)
 
 
 def get_session():
-    """Buat session baru untuk satu unit kerja (satu proses sync)."""
+    """Create a new session for one unit of work (one sync run)."""
     return SessionLocal()

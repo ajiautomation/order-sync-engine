@@ -1,9 +1,9 @@
 """
-Retry logic dengan exponential backoff.
+Retry logic with exponential backoff.
 
-Dipakai untuk membungkus pemanggilan API yang mungkin gagal sementara
-(network error, rate limit, server down) — dicoba ulang beberapa kali
-dengan jeda yang makin lama, bukan langsung menyerah.
+Wraps API calls that may fail transiently (network errors, rate limits,
+server downtime) so they're retried with increasing delay instead of
+failing immediately.
 """
 
 import time
@@ -13,13 +13,13 @@ from requests.exceptions import RequestException
 
 def retry_with_backoff(max_attempts: int = 4, base_delay: float = 1.0):
     """
-    Decorator: bungkus fungsi supaya otomatis dicoba ulang kalau gagal.
+    Decorator: wrap a function so it's automatically retried on failure.
 
-    max_attempts : berapa kali total percobaan (termasuk yang pertama)
-    base_delay   : jeda awal dalam detik, dilipatgandakan tiap percobaan gagal
-                   (1s -> 2s -> 4s -> 8s, dst)
+    max_attempts : total number of attempts (including the first)
+    base_delay   : initial delay in seconds, doubled on each failed attempt
+                   (1s -> 2s -> 4s -> 8s, ...)
 
-    Contoh pakai:
+    Usage:
         @retry_with_backoff(max_attempts=4, base_delay=1.0)
         def fetch_orders():
             ...
@@ -39,8 +39,8 @@ def retry_with_backoff(max_attempts: int = 4, base_delay: float = 1.0):
                         break
                     delay = base_delay * (2 ** (attempt - 1))
                     print(
-                        f"[retry] Percobaan {attempt}/{max_attempts} gagal "
-                        f"({e}). Coba lagi dalam {delay:.0f} detik..."
+                        f"[retry] Attempt {attempt}/{max_attempts} failed "
+                        f"({e}). Retrying in {delay:.0f}s..."
                     )
                     time.sleep(delay)
 

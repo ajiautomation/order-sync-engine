@@ -1,17 +1,17 @@
 """
-Tests untuk order_validator.py
+Tests for order_validator.py
 
-Jalankan dengan: pytest tests/test_validator.py -v
+Run with: pytest tests/test_validator.py -v
 """
 
 from src.validation.order_validator import validate_order
 
 
 def make_valid_order(**overrides):
-    """Helper: bikin order valid, bisa di-override field tertentu untuk testing."""
+    """Helper: build a valid order, with optional field overrides for testing."""
     order = {
         "shopify_order_id": "1001",
-        "customer_name": "Budi Santoso",
+        "customer_name": "Jane Doe",
         "sku": "SKU-001",
         "quantity": 2,
         "price": 150000,
@@ -62,7 +62,7 @@ def test_negative_quantity_fails():
 
 
 def test_non_numeric_price_fails():
-    order = make_valid_order(price="mahal")
+    order = make_valid_order(price="expensive")
     result = validate_order(order)
     assert result.is_valid is False
 

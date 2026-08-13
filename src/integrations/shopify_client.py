@@ -1,5 +1,5 @@
 """
-Client untuk mengambil data order dari Shopify Admin API.
+Client for fetching order data from the Shopify Admin API.
 """
 
 import os
@@ -14,20 +14,20 @@ load_dotenv()
 
 SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN")
 ACCESS_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN")
-API_VERSION = "2026-07"  # samakan dengan versi yang dipilih waktu bikin app
+API_VERSION = "2026-07"  # keep in sync with the version chosen when the app was created
 
 
 @retry_with_backoff(max_attempts=4, base_delay=1.0)
 def fetch_orders(limit: int = 50) -> list[dict]:
     """
-    Ambil daftar order terbaru dari toko Shopify.
+    Fetch the most recent orders from the Shopify store.
 
-    Return: list of dict, masing-masing berisi data 1 order
-    (sudah disederhanakan agar cocok dengan format yang dibutuhkan validator).
+    Returns: a list of dicts, one per order (already flattened to the
+    simplified format expected by the validator).
     """
     if not SHOP_DOMAIN or not ACCESS_TOKEN:
         raise ValueError(
-            "SHOPIFY_SHOP_DOMAIN dan SHOPIFY_ACCESS_TOKEN harus terisi di .env"
+            "SHOPIFY_SHOP_DOMAIN and SHOPIFY_ACCESS_TOKEN must be set in .env"
         )
 
     url = f"https://{SHOP_DOMAIN}/admin/api/{API_VERSION}/orders.json"
@@ -41,7 +41,7 @@ def fetch_orders(limit: int = 50) -> list[dict]:
 
     raw_orders = response.json().get("orders", [])
 
-    # Ubah format Shopify (kompleks) jadi format sederhana yang dipakai validator kita
+    # Flatten Shopify's nested order format into the simplified shape our validator expects
     simplified_orders = []
     for order in raw_orders:
         line_items = order.get("line_items", [])
@@ -54,7 +54,7 @@ def fetch_orders(limit: int = 50) -> list[dict]:
                 "sku": first_item.get("sku") or first_item.get("title", ""),
                 "quantity": first_item.get("quantity", 0),
                 "price": float(order.get("total_price", 0)),
-                "raw_payload": order,  # simpan data asli lengkap, buat jaga-jaga
+                "raw_payload": order,  # keep the full original payload for reference
             }
         )
 
@@ -71,8 +71,8 @@ def _get_customer_name(order: dict) -> str:
 
 
 if __name__ == "__main__":
-    # Uji coba manual: jalankan langsung file ini untuk lihat hasilnya
+    # Manual smoke test: run this file directly to see the result
     orders = fetch_orders()
-    print(f"Berhasil ambil {len(orders)} order:\n")
+    print(f"Fetched {len(orders)} orders:\n")
     for o in orders:
         print(o)

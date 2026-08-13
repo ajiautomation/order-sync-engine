@@ -1,8 +1,8 @@
 """
-Validator untuk data order sebelum masuk ke database.
+Validator for order data before it's written to the database.
 
-Fungsi di sini murni (pure function): terima dict, kembalikan hasil validasi.
-Tidak menyentuh database atau API sama sekali — supaya gampang ditest.
+Functions here are pure: they take a dict and return a validation
+result. No database or API access — this keeps them easy to test.
 """
 
 from dataclasses import dataclass
@@ -11,10 +11,10 @@ from typing import Optional
 
 @dataclass
 class ValidationResult:
-    """Hasil validasi satu order."""
+    """Result of validating a single order."""
 
     is_valid: bool
-    reason: Optional[str] = None  # diisi kalau is_valid == False
+    reason: Optional[str] = None  # set when is_valid is False
 
 
 REQUIRED_FIELDS = ["shopify_order_id", "customer_name", "sku", "quantity", "price"]
@@ -22,49 +22,49 @@ REQUIRED_FIELDS = ["shopify_order_id", "customer_name", "sku", "quantity", "pric
 
 def validate_order(order: dict) -> ValidationResult:
     """
-    Validasi satu order (dalam bentuk dict).
+    Validate a single order (as a dict).
 
-    Contoh order yang valid:
+    Example of a valid order:
         {
             "shopify_order_id": "1001",
-            "customer_name": "Budi Santoso",
+            "customer_name": "Jane Doe",
             "sku": "SKU-001",
             "quantity": 2,
             "price": 150000,
         }
     """
 
-    # 1. Cek semua field wajib ada dan tidak kosong
+    # 1. All required fields must be present and non-empty
     for field in REQUIRED_FIELDS:
         if field not in order or order[field] in (None, ""):
             return ValidationResult(
                 is_valid=False,
-                reason=f"Field wajib '{field}' tidak ada atau kosong",
+                reason=f"Required field '{field}' is missing or empty",
             )
 
-    # 2. Cek quantity harus angka positif
+    # 2. Quantity must be a positive number
     quantity = order["quantity"]
     if not isinstance(quantity, (int, float)) or quantity <= 0:
         return ValidationResult(
             is_valid=False,
-            reason=f"Quantity harus angka positif, dapat: {quantity!r}",
+            reason=f"Quantity must be a positive number, got: {quantity!r}",
         )
 
-    # 3. Cek price harus angka positif
+    # 3. Price must be a positive number
     price = order["price"]
     if not isinstance(price, (int, float)) or price <= 0:
         return ValidationResult(
             is_valid=False,
-            reason=f"Price harus angka positif, dapat: {price!r}",
+            reason=f"Price must be a positive number, got: {price!r}",
         )
 
-    # 4. Cek SKU harus teks yang tidak kosong setelah di-strip
+    # 4. SKU must be non-empty text after stripping whitespace
     sku = order["sku"]
     if not isinstance(sku, str) or not sku.strip():
         return ValidationResult(
             is_valid=False,
-            reason=f"SKU harus berupa teks yang valid, dapat: {sku!r}",
+            reason=f"SKU must be valid text, got: {sku!r}",
         )
 
-    # Semua aturan lolos
+    # All rules passed
     return ValidationResult(is_valid=True)

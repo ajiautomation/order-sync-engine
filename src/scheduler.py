@@ -1,12 +1,13 @@
 """
-Scheduler — menjalankan sync_engine secara otomatis berkala.
+Scheduler — runs sync_engine automatically on a recurring interval.
 
-Ini yang membuat proyek "hidup" tanpa perlu dijalankan manual terus-menerus.
-Kalau satu kali sync gagal (misal internet mati), scheduler akan tetap
-mencoba lagi di jadwal berikutnya — bukan menyerah selamanya.
+This is what makes the project run unattended instead of needing a
+manual trigger every time. If one sync run fails (e.g. the network is
+down), the scheduler keeps trying on the next cycle instead of giving
+up permanently.
 
-Jalankan: python src/scheduler.py
-Hentikan dengan: Ctrl+C
+Run: python -m src.scheduler
+Stop with: Ctrl+C
 """
 
 import os
@@ -27,19 +28,19 @@ SYNC_INTERVAL_MINUTES = int(os.getenv("SYNC_INTERVAL_MINUTES", 15))
 
 def scheduled_job():
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    print(f"\n[{timestamp}] Menjalankan sync terjadwal...")
+    print(f"\n[{timestamp}] Running scheduled sync...")
 
     result = run_sync()
 
     print(
-        f"[{timestamp}] Selesai — status: {result['status']}, "
-        f"diambil: {result['orders_fetched']}, "
-        f"sync: {result['orders_synced']}, "
-        f"quarantine: {result['orders_quarantined']}"
+        f"[{timestamp}] Done — status: {result['status']}, "
+        f"fetched: {result['orders_fetched']}, "
+        f"synced: {result['orders_synced']}, "
+        f"quarantined: {result['orders_quarantined']}"
     )
 
     if result["status"] == "failed":
-        print(f"[{timestamp}] Sync gagal kali ini, akan dicoba lagi di jadwal berikutnya.")
+        print(f"[{timestamp}] This run failed — will retry on the next scheduled cycle.")
 
 
 if __name__ == "__main__":
@@ -48,13 +49,13 @@ if __name__ == "__main__":
         scheduled_job,
         "interval",
         minutes=SYNC_INTERVAL_MINUTES,
-        next_run_time=datetime.now(),  # jalankan sekali langsung saat start
+        next_run_time=datetime.now(),  # also run once immediately on start
     )
 
-    print(f"Scheduler aktif — sync akan berjalan setiap {SYNC_INTERVAL_MINUTES} menit.")
-    print("Tekan Ctrl+C untuk berhenti.\n")
+    print(f"Scheduler active — sync will run every {SYNC_INTERVAL_MINUTES} minutes.")
+    print("Press Ctrl+C to stop.\n")
 
     try:
         scheduler.start()
     except (KeyboardInterrupt, SystemExit):
-        print("\nScheduler dihentikan.")
+        print("\nScheduler stopped.")
